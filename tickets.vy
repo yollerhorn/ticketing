@@ -7,11 +7,9 @@ rgtier: {
    }[3]                # CWT - '3' should be replaced at contract creation time.
 
 balanceOf: public(wei_value[address])
-seeWhatYouGot: bytes[80]
 
 @public
 def __init__():
-   self.seeWhatYouGot = "I want to see what you got!"
 #  The following assignments would be filled in at contract creation time. CWT
    self.rgtier[0] = {szName: "Tier A", cSeats: 20, cSeatsSold: 0, price: 150 }
    self.rgtier[1] = {szName: "Tier B", cSeats: 80, cSeatsSold: 0, price: 100 }
