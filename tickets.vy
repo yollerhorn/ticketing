@@ -1,8 +1,6 @@
-showMeCalled: event()
-
 # The array of seating tiers.
 rgtier: {
-   wzName: bytes[256], # Allows a 127-character Unicode name with a trailing zero to mark the end of the string.
+   szName: bytes[256], # Allows a 255-character ASCII name with a trailing zero to mark the end of the string.
    cSeats: int128,
    cSeatsSold: int128,
    price: int128
@@ -10,43 +8,47 @@ rgtier: {
 
 balanceOf: public(wei_value[address])
 seeWhatYouGot: bytes[80]
-cTktAvail: int128
 
 @public
 def __init__():
    self.seeWhatYouGot = "I want to see what you got!"
-#   self.cTktAvail = 100
 #  The following assignments would be filled in at contract creation time. CWT
-   self.rgtier[0] = {wzName: "Tier A", cSeats: 20, cSeatsSold: 0, price: 150 }
-   self.rgtier[1] = {wzName: "Tier B", cSeats: 80, cSeatsSold: 0, price: 100 }
-   self.rgtier[2] = {wzName: "Tier C", cSeats: 60, cSeatsSold: 0, price:  40 }
+   self.rgtier[0] = {szName: "Tier A", cSeats: 20, cSeatsSold: 0, price: 150 }
+   self.rgtier[1] = {szName: "Tier B", cSeats: 80, cSeatsSold: 0, price: 100 }
+   self.rgtier[2] = {szName: "Tier C", cSeats: 60, cSeatsSold: 0, price:  40 }
 
-# countAvail returns the count of available (unsold) seats in the tier identified by idTier.
-@public
-@constant
-def countAvail(idTier: int128) -> int128:
-   assert idTier >= 0
-   assert idTier < 3       # CWT - contract write time change
-#   return self.cTktAvail
-   return self.rgtier[idTier].cSeats - self.rgtier[idTier].cSeatsSold
-
-@public
-@payable
-def buy(idTier: int128, c: int128):
-   assert idTier >= 0
-   assert idTier < 3       # CWT - contract write time change
-   assert c >= 0
-   if self.countAvail(idTier) >= c:
-      self.rgtier[idTier].cSeatsSold += c
-
+# countTiers returns the count of seating tiers that have been defined for this contract.
 # "In web3, if you make a state-changing transaction, the API will return the transaction hash for that
 # transaction instead of any return values." So we mark with @constant any time we want to actually return a
 # value.
 @public
 @constant
-def showMe() -> bytes[80]:
-   log.showMeCalled()
-   return self.seeWhatYouGot 
+def countTiers() -> int128:
+   return 3     # CWT
+
+@public
+@constant
+def getTierName(iTier: int128) -> bytes[256]:
+   assert iTier >= 0
+   assert iTier < 3       # CWT - contract write time change
+   return self.rgtier[iTier].szName
+
+# seatsAvail returns the count of available (unsold) seats in the tier identified by iTier.
+@public
+@constant
+def seatsAvail(iTier: int128) -> int128:
+   assert iTier >= 0
+   assert iTier < 3       # CWT - contract write time change
+   return self.rgtier[iTier].cSeats - self.rgtier[iTier].cSeatsSold
+
+@public
+@payable
+def buy(iTier: int128, c: int128):
+   assert iTier >= 0
+   assert iTier < 3       # CWT - contract write time change
+   assert c >= 0
+   if self.seatsAvail(iTier) >= c:
+      self.rgtier[iTier].cSeatsSold += c
 
 @public
 def kill():
