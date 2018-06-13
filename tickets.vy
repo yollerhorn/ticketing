@@ -1,9 +1,9 @@
 # The array of seating tiers.
 rgtier: {
    szName: bytes[256], # Allows a 255-character ASCII name with a trailing zero to mark the end of the string.
-   cSeats: int128,
-   cSeatsSold: int128,
-   price: int128
+   cSeats: uint256,
+   cSeatsSold: uint256,
+   price: wei_value
    }[3]                # CWT - '3' should be replaced at contract creation time.
 
 balanceOf: public(wei_value[address])
@@ -21,32 +21,33 @@ def __init__():
 # value.
 @public
 @constant
-def countTiers() -> int128:
+def countTiers() -> uint256:
    return 3     # CWT
 
 @public
 @constant
-def getTierName(iTier: int128) -> bytes[256]:
-   assert iTier >= 0
+def getTierName(iTier: uint256) -> bytes[256]:
    assert iTier < 3       # CWT - contract write time change
    return self.rgtier[iTier].szName
 
 # seatsAvail returns the count of available (unsold) seats in the tier identified by iTier.
 @public
 @constant
-def seatsAvail(iTier: int128) -> int128:
-   assert iTier >= 0
+def seatsAvail(iTier: uint256) -> uint256:
    assert iTier < 3       # CWT - contract write time change
    return self.rgtier[iTier].cSeats - self.rgtier[iTier].cSeatsSold
 
 @public
 @payable
-def buy(iTier: int128, c: int128):
-   assert iTier >= 0
+def buy(iTier: uint256, c: uint256):
    assert iTier < 3       # CWT - contract write time change
-   assert c >= 0
+   costOfPurchase: wei_value = c*self.rgtier[iTier].price
+   assert msg.value >= costOfPurchase
    if self.seatsAvail(iTier) >= c:
       self.rgtier[iTier].cSeatsSold += c
+      # send costOfPurchase to the theater
+      if msg.value > costOfPurchase:
+         send(msg.sender, msg.value - costOfPurchase) # send purchaser their change
 
 @public
 def kill():
